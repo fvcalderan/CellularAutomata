@@ -33,7 +33,7 @@ function random_position(min, max) {
 function insert_random_points() {
     // insert random points
     for (let i = 0; i < insert_random_amount; i++) {
-        position = random_position(1, cols-1);
+        position = random_position(0, cols-1);
         automata.set_state(position["x"], position["y"], 1);
     }
     draw_board();
