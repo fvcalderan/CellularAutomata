@@ -8,7 +8,7 @@ class Automata {
      * constructor(loneliness, overpopulation, reproduction, rows, cols)
      * initialize() 
      * evolve()
-     * get_state()
+     * get_state(x, y)
      * set_state(x, y, val) */
 
     constructor(loneliness, overpopulation, reproduction, rows, cols) {
