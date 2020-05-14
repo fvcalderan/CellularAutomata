@@ -1,6 +1,6 @@
 # Cellular Automata
 
-###Developers:
+### Developers:
 
 Felipe Vaiano Calderan
 
@@ -8,10 +8,10 @@ Gabriel Augusto Lins Leal
 
 Silvio de Souza Neves Neto
 
-###Professor:
+### Professor:
 
 Antônio Augusto Chaves
 
-###How to run the program:
+### How to run the program:
 
 Open `index.html` in the browser.
