@@ -10,14 +10,39 @@
       padding: 0;
       margin: 0;
     }
+
+    .fxph, .fxph-1{
+      border: 0; 
+      padding: 4px 0;
+      border-bottom: 1px solid #ccc;
+      background-color: transparent;
+    }
+
+    .fxph ~ #id-fxph, .fxph-1 ~ #id-fxph-1{
+      position: absolute; 
+      left: 0; 
+      width: 100%;
+      top: 9px;
+      color: #aaa;
+      transition: 0.3s;
+      z-index: -1;
+      letter-spacing: 0.5px;
+    }
+
+    .fxph:focus ~ #id-fxph, .has-content.fxph ~ #id-fxph,
+    .fxph-1:focus ~ #id-fxph-1, .has-content.fxph-1 ~ #id-fxph-1{
+      top: 145px !important;
+      font-size: 12px;
+      color: #2980b9;
+      transition: 0.3s;
+    }
+
   </style>
   <script src="./libs/p5.js"></script>
   <script src="main.js"></script>
   <script src="automata.js"></script>
   <script src="automaton.js"></script>
 </head>
-
 <body>
 </body>
-
 </html>

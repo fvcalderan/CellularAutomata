@@ -36,30 +36,49 @@ class Automata {
         } 
     }
 
-    evolve() {
+    evolve(mode) {
         // evolve automata
-        
+
         // create aux matrix
         let aux = new Array(this.cols);
         for (let i = 0; i < this.cols; i++) {
             aux[i] = new Array(this.rows);
             for (let j = 0; j < this.rows; j++) {
-                aux[i][j] = new Automaton(0);
+                // Essa inicialização afeta o rule 30
+                // Faz não afeta o game of life
+                aux[i][j] = new Automaton(this.state[i][j].get_value());
             }
         }
 
-        // compute new state
-        for (let x = 1; x < this.cols - 1; x++) {
-            for (let y = 1; y < this.rows - 1; y++) {
-                let neighbors = this._num_of_neighbors(x, y);
-                this._apply_rules(x, y, neighbors, aux);
-            }
-        } 
+        if (mode == "Rule 30"){
 
-        // swap states
-        let temp = this.state;
+            for (let x = 0; x < this.cols-1; x++) {
+                for (let y = 1; y < this.rows - 1; y++) {
+                    let a = this.state[y-1][x].get_value();
+                    let b = this.state[y][x].get_value();
+                    let c = this.state[y+1][x].get_value();
+                    if (a == 1 && b == 1 && c == 1) aux[y][x+1].set_value(0);
+                    if (a == 1 && b == 1 && c == 0) aux[y][x+1].set_value(0);
+                    if (a == 1 && b == 0 && c == 1) aux[y][x+1].set_value(0);
+                    if (a == 1 && b == 0 && c == 0) aux[y][x+1].set_value(1);
+                    if (a == 0 && b == 1 && c == 1) aux[y][x+1].set_value(1);
+                    if (a == 0 && b == 1 && c == 0) aux[y][x+1].set_value(1);
+                    if (a == 0 && b == 0 && c == 1) aux[y][x+1].set_value(1);
+                    if (a == 0 && b == 0 && c == 0) aux[y][x+1].set_value(0);
+                }
+            }
+
+        }else if(mode == "Game of life"){
+            // compute new state
+            for (let x = 1; x < this.cols - 1; x++) {
+                for (let y = 1; y < this.rows - 1; y++) {
+                    let neighbors = this._num_of_neighbors(x, y);
+                    aux[x][y].set_value(this._apply_rules(x, y, neighbors));
+                }
+            } 
+        }
+
         this.state = aux;
-        aux = temp;
     }
 
     get_state(x, y) {
@@ -82,17 +101,12 @@ class Automata {
         return neighbors - this.state[x][y].get_value();
     }
 
-    _apply_rules(x, y, neighbors, aux) {
+    _apply_rules(x, y, neighbors) {
         // apply defined rules to (x, y)
-        if (this.state[x][y].get_value() == 1 && neighbors < this.lone) {
-            aux[x][y].set_value(0);
-        } else if (this.state[x][y].get_value() == 1 && neighbors > this.overpop) {
-            aux[x][y].set_value(0);
-        } else if (this.state[x][y].get_value() == 0 && neighbors == this.repro) {
-            aux[x][y].set_value(1);
-        } else {
-            aux[x][y].set_value(this.state[x][y].get_value());
-        }
+        if (this.state[x][y].get_value() == 1 && neighbors < this.lone) return 0;
+        else if (this.state[x][y].get_value() == 1 && neighbors > this.overpop) return 0;
+        else if (this.state[x][y].get_value() == 0 && neighbors == this.repro) return 1;
+        else  return this.state[x][y].get_value();
     }
 
 }
