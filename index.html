@@ -5,6 +5,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cellular Automata</title>
+  <link rel="stylesheet" type="text/css" href="./libs/chartist.min.css">
+  <script src="./libs/p5.js"></script>
+  <script src="automata.js"></script>
+  <script src="automaton.js"></script>
   <style>
     body {
       padding: 0;
@@ -37,16 +41,20 @@
       transition: 0.3s;
     }
 
+    .ct-axis-title{
+      fill: #fff;
+      font-family: Courier, monospace;
+    }
+
     body {
       background-color: #272822;
     }
-
   </style>
-  <script src="./libs/p5.js"></script>
-  <script src="main.js"></script>
-  <script src="automata.js"></script>
-  <script src="automaton.js"></script>
 </head>
 <body>
+  <div class="ct-chart" id="chart"></div>
+  <script src="./libs/chartist.js"></script>
+  <script src="./libs/chartist-plugin-axistitle.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>

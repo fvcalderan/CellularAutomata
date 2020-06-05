@@ -24,6 +24,7 @@ class Automata {
         for (let i = 0; i < rows; i++) {
             this.state[i] = new Array(cols);
         }
+        this.unique = {0:0, 1:0};
     }
 
     initialize() {
@@ -32,33 +33,39 @@ class Automata {
         for (let x = 0; x < this.rows; x++) {
             for (let y = 0; y < this.cols; y++) {
                 this.state[x][y] = new Automaton(0);
+                this.unique[0] += 1;
             }
         }
     }
 
     evolve(mode) {
         // evolve automata
+        this.unique = {0:0, 1:0};
 
         if (mode == "Elementary CA") {
-
-            //move lines up
-            for (let x = 1; x < rows; x++)
-                for (let y = 0; y < this.cols; y++)
+            // move lines up
+            for (let x = 1; x < rows; x++){
+                for (let y = 0; y < this.cols; y++){
                     this.state[x-1][y].set_value(this.state[x][y].get_value());
+                    this.unique[this.state[x][y].get_value()] += 1;
+                }
+            }
 
-            let rule_table = ("00000000" + int(initial_input.value()).toString(2)).slice(-8);
+            // create a table with the input rule
+            let rule_table = ("00000000" + int(initial_value).toString(2)).slice(-8);
 
+            // compute new generations
             for (let y = 0; y < this.cols; y++) {
                 let a = (y == 0) ? this.state[rows-2][cols-1].get_value() : this.state[rows-2][y-1].get_value();
                 let b = this.state[rows-2][y].get_value();
                 let c = (y == cols-1) ? this.state[rows-2][0].get_value() : this.state[rows-2][y+1].get_value();
-                
-                if(b == 1) c = int(c) + 2;
-                if(a == 1) c = int(c) + 4;
+                if (b == 1) c = int(c) + 2;
+                if (a == 1) c = int(c) + 4;
                 this.state[rows-1][y].set_value(rule_table[7-int(c)]);
+                this.unique[this.state[rows-1][y].get_value()] += 1;
             }
 
-        } else if(mode == "Game of life") {
+        } else if (mode == "Game of life") {
             // create aux matrix
             let aux = new Array(this.rows);
             for (let i = 0; i < this.rows; i++) {
@@ -71,10 +78,11 @@ class Automata {
             for (let x = 0; x < this.rows; x++) {
                 for (let y = 0; y < this.cols; y++) {
                     let neighbors = this._num_of_neighbors(x, y);
-                    aux[x][y].set_value(this._apply_rules(x, y, neighbors));
+                    let tmp_value = this._apply_rules(x, y, neighbors);
+                    aux[x][y].set_value(tmp_value);
+                    this.unique[tmp_value] += 1;
                 }
             }
-
             this.state = aux;
         }
     }
@@ -87,6 +95,10 @@ class Automata {
         this.state[x][y].set_value(val);
     }
 
+    get_unique(){
+        return this.unique;
+    }
+
     _num_of_neighbors(x, y) {
         // get cell's amount of neighbors
         let neighbors = 0;
@@ -95,16 +107,12 @@ class Automata {
             for (let j = -1; j <= 1; j++) {
 
                 indexX = x + i;
-                indexY = y + j;
+                if (indexX == -1) indexX = this.rows-1;
+                else if (indexX == this.rows) indexX = 0;
 
-                if(indexX == -1)
-                    indexX = this.rows - 1;
-                else if(indexX == this.rows)
-                    indexX = 0;
-                if(indexY == -1)
-                    indexY = this.cols - 1;
-                else if(indexY == this.cols)
-                    indexY = 0;
+                indexY = y + j;
+                if (indexY == -1) indexY = this.cols-1;
+                else if (indexY == this.cols) indexY = 0;
 
                 neighbors += this.state[indexX][indexY].get_value();
             }
@@ -121,5 +129,4 @@ class Automata {
         else if (this.state[x][y].get_value() == 0 && neighbors == this.repro) return 1;
         else return this.state[x][y].get_value();
     }
-
 }

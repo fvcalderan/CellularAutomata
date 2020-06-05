@@ -6,14 +6,15 @@
 // simulation variables
 let rows = 50;
 let cols = 50;
+let initial_value = "30";
 let size = 10;
 let loneliness = 2;
 let overpopulation = 3;
 let reproduction = 3;
 let automata, cnv;
-let size_input, initial_input;
+let size_input, initial_input, div_chart;
 let mode = "Elementary CA";
-let insert_random_amount = 400;
+let insert_random_amount = 500;
 // color variables
 let background_color = "#272822";
 let active_color = "#d7d8d2";
@@ -23,11 +24,8 @@ let title_examples;
 let generation = 0;
 let running = false;
 let btn_play_pause, btn_clear_board, dropdown, count, btn_ex1;
-
-function random_position(minX, maxX, minY, maxY) {
-    // returns random (x, y) position dictionary
-    return {x: floor(random(minX, maxX)), y: floor(random(minY, maxY))};
-}
+let arrx = [0];
+let arry = [1];
 
 function insert_random_points() {
     // insert random points
@@ -44,8 +42,6 @@ function insert_random_points() {
         automata.set_state(position_list[aux].x, position_list[aux].y, 1);
         position_list.splice(aux, 1);
     }
-
-    draw_board();
 }
 
 function insert_opt_one(){
@@ -54,9 +50,9 @@ function insert_opt_one(){
     cols = 50;
 
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
-    cnv.position(400, 40);
+    cnv.position(380, 40);
     automata = new Automata(loneliness, overpopulation, reproduction, rows, cols);
-    size_input.value(50);
+    size_input.value("50,50");
 
     pts = [[2,6],
            [2,7],
@@ -100,6 +96,10 @@ function insert_opt_one(){
     for (let i = 0; i < pts.length; i++) {
         automata.set_state(pts[i][0], pts[i][1], 1);
     }
+
+    arrx = [0];
+    arry = [pts.length];
+    graph(arrx, arry);
     draw_board();
 }
 
@@ -130,40 +130,76 @@ function reset_automata() {
     
     if (mode == "Elementary CA") {
         automata.set_state(rows-1, floor(cols/2), 1);
+        arry = [1];
     }
     else {
         insert_random_points();
+        arry = [insert_random_amount];
     }
-
     draw_board();
+    arrx = [0];
+    graph(arrx, arry);
 }
 
 function update_automata() {
     generation = 0;
     count.html("Generation: "+generation);
-    rows = size_input.value();
-    cols = size_input.value();
+
+    let aux = size_input.value().match(/\d+/g);
+    if (aux == null) {
+        rows = 50;
+        cols = 50;
+    }
+    else {
+        rows = aux[0];
+        if (rows < 1) rows = 50;
+        cols = aux[1];
+        if (cols == undefined || cols < 1) cols = rows;
+    }
+    size_input.value(rows+","+cols);
 
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
-    cnv.position(400, 40);
+    cnv.position(380, 40);
     automata = new Automata(loneliness, overpopulation, reproduction, rows, cols);
+    
+    div_chart.position(cols*size+size*2+400,120);
 
-    // Computing start point
+    aux = initial_input.value().match(/\d+/);
     if (mode == "Elementary CA") {
         automata.initialize();
-        if (int(initial_input.value()) > 255) {
+        if (aux == null) {
             initial_input.value("30");
         }
-        automata.set_state(rows-1, floor(cols/2), 1);
-    }else {
-        if(int(initial_input.value()) > rows*cols) {
-            initial_input.value(floor(rows*cols*0.2));
+        else if (aux[0] > 255 || aux[0] < 0) {
+            initial_input.value("30");
         }
-        insert_random_amount = int(initial_input.value());
-        insert_random_points();
+        else {
+            initial_input.value(aux[0]);
+        }
+        initial_value = initial_input.value();
+        automata.set_state(rows-1, floor(cols/2), 1);
+        arry = [1];
     }
-
+    else if (mode == "Game of life") {
+        if (aux == null) {
+            initial_input.value(floor(rows*cols*0.2));
+            insert_random_amount = floor(rows*cols*0.2);
+        }
+        else if (aux[0] > rows*cols || aux[0] < 0) {
+            initial_input.value(floor(rows*cols*0.2));
+            insert_random_amount = floor(rows*cols*0.2);
+        }
+        else {
+            initial_input.value(aux[0]);
+            insert_random_amount = aux[0];
+        }
+        initial_value = initial_input.value();
+        insert_random_points();
+        arry = [insert_random_amount];
+    }
     draw_board();
+    arrx = [0];
+    graph(arrx, arry);
 }
 
 function btn_style(btn){
@@ -213,7 +249,7 @@ function create_UI() {
     title_para.style("color", "#a6e22e");
 
     // Input
-    size_input = createInput("50");
+    size_input = createInput("50,50");
     size_input.attribute("class", "fxph");
     size_input.attribute("placeholder", "");   
     size_input.position(40, 160);
@@ -254,16 +290,21 @@ function create_UI() {
     btn_update.style("width", "290px");
     btn_update.position(40, 200);
     btn_update.mousePressed(update_automata);
+
+    div_chart = select('#chart');
+    div_chart.position(cols*size+size*2+400,120);
+
 }
 
 function changeMode() {
     mode = dropdown.value();
-    
-    if (mode == "Game of life"){
-        initial_input.value(insert_random_amount);
+
+    size_input.value("50,50");
+
+    if (mode == "Game of life") {
+        initial_input.value("500");
         initial_input_label.html("Random pixels");
-        insert_random_points();
-        
+
         title_examples = createElement("p", "Examples");
         title_examples.position(40, 310);
         title_examples.style("color", "#a6e22e");
@@ -274,17 +315,22 @@ function changeMode() {
         btn_ex1.style("background-color", "#66d9ef");
         btn_ex1.position(40, 360);
         btn_ex1.mousePressed(insert_opt_one);
-
-    } else {
+        arry = [insert_random_amount];
+    }
+    else {
+        arry = [1];
+        initial_input.value("30");
+        initial_input_label.html("Rule");
 
         title_examples.remove();
         btn_ex1.remove();
-        automata.initialize();
-        automata.set_state(rows-1, floor(cols/2), 1);
-        initial_input.value("30");
-        initial_input_label.html("Rule");
-        draw_board();
     }
+
+    update_automata();
+    draw_board();
+    arrx = [0];
+    
+    graph(arrx, arry);
 }
 
 function draw_board() {
@@ -306,14 +352,61 @@ function draw_board() {
     }
 }
 
+function graph(arrx, arry){
+    new Chartist.Line('#chart', {
+        labels: arrx,
+        series: [
+            arry,
+        ]
+    }, {
+        low: 0,
+        showArea: true,
+        width: 460,
+        height: 320,
+        axisX: {
+            labelInterpolationFnc: function labelInterpolationFnc(value, index) {
+                if(value % 60 === 0) return value;
+                return null;
+            }
+        },
+        chartPadding: {
+            bottom: 20,
+            left: 30
+        },
+        plugins: [
+            Chartist.plugins.ctAxisTitle({
+                axisX: {
+                    axisTitle: 'Generation',
+                    axisClass: 'ct-axis-title',
+                    offset: {
+                        x: 0,
+                        y: 30
+                    },
+                    textAnchor: 'middle'
+                },
+                axisY: {
+                    axisTitle: '# of cells',
+                    axisClass: 'ct-axis-title',
+                    offset: {
+                        x: 0,
+                        y: -5
+                    },
+                    textAnchor: 'middle',
+                    flipTitle: false
+                }
+            })
+        ]
+    });
+}
+
 function setup() {
     count = createElement("p", "Generation: "+generation);
     count.style("font-family", "Courier, monospace");
     count.style("color", "#a6e22e");
-    count.position(405,0);
+    count.position(385,0);
     create_UI();
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
-    cnv.position(400, 40);
+    cnv.position(380, 40);
     automata = new Automata(loneliness, overpopulation, reproduction, rows, cols);
     reset_automata();
 }
@@ -332,6 +425,13 @@ function draw() {
     count.html("Generation: "+generation);
     automata.evolve(mode);
     draw_board();
+
+    arrx.push(generation);
+    arry.push(automata.get_unique()[1]);
+
+    graph(arrx, arry);
+
+
 }
 
 // button function example
