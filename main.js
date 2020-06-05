@@ -385,7 +385,7 @@ function graph(arrx, arry){
                     textAnchor: 'middle'
                 },
                 axisY: {
-                    axisTitle: '# of cells',
+                    axisTitle: '# of activated cells',
                     axisClass: 'ct-axis-title',
                     offset: {
                         x: 0,
