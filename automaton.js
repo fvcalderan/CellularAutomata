@@ -6,10 +6,13 @@ class Automaton {
      * Public methods:
      * constructor(value)
      * get_value()
-     * set_value(val) */
+     * set_value(val) 
+     * get_count()
+     * set_count(val)       */
 
-    constructor(value) {
+    constructor(value, count) {
         this.value = value;
+        this.count = count;
     }
 
     get_value() {
@@ -18,5 +21,13 @@ class Automaton {
 
     set_value(val) {
         this.value = val;
+    }
+    
+    get_count() {
+        return this.count;
+    }
+
+    set_count(val) {
+        this.count = val;
     }
 }

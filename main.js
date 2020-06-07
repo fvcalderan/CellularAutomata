@@ -8,17 +8,29 @@ let rows = 50;
 let cols = 50;
 let initial_value = "30";
 let size = 10;
+
+// GoL settings
 let loneliness = 2;
 let overpopulation = 3;
 let reproduction = 3;
+
+// SIR settings
+let infect_chance = 0.01;
+let recover_mult = 100;
+let recover_minimum = 50;
+
+// other setup
 let automata, cnv;
 let size_input, initial_input, div_chart;
 let mode = "Elementary CA";
 let insert_random_amount = 500;
+
 // color variables
 let background_color = "#272822";
 let active_color = "#d7d8d2";
 let inactive_color = "#373832";
+let removed_color = "#f92672";
+
 // ui variables
 let title_examples;
 let generation = 0;
@@ -51,46 +63,15 @@ function insert_opt_one(){
 
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
     cnv.position(380, 40);
-    automata = new Automata(loneliness, overpopulation, reproduction, rows, cols);
+    automata = new Automata(rows, cols);
+    automata.GoL_set(loneliness, overpopulation, reproduction);
     size_input.value("50,50");
 
-    pts = [[2,6],
-           [2,7],
-           [3,6],
-           [3,7],
-           [12,6],
-           [12,7],
-           [12,8],
-           [13,9],
-           [13,5],
-           [14,10],
-           [15,10],
-           [14,4],
-           [15,4],
-           [16,7],
-           [17,5],
-           [17,9],
-           [18,6],
-           [18,7],
-           [18,8],
-           [19,7],
-           [22,4],
-           [22,5],
-           [22,6],
-           [23,4],
-           [23,5],
-           [23,6],
-           [24,3],
-           [24,7],
-           [26,2],
-           [26,3],
-           [26,7],
-           [26,8],
-           [36,4],
-           [36,5],
-           [37,4],
-           [37,5],
-        ]
+    pts = [[2,6], [2,7], [3,6], [3,7], [12,6], [12,7], [12,8], [13,9], [13,5], [14,10],
+           [15,10], [14,4], [15,4],[16,7],[17,5], [17,9], [18,6], [18,7], [18,8], [19,7],
+           [22,4], [22,5], [22,6], [23,4], [23,5], [23,6], [24,3], [24,7], [26,2], [26,3], 
+           [26,7], [26,8], [36,4], [36,5], [37,4], [37,5],
+          ]
 
     automata.initialize();
     for (let i = 0; i < pts.length; i++) {
@@ -132,7 +113,10 @@ function reset_automata() {
         automata.set_state(rows-1, floor(cols/2), 1);
         arry = [1];
     }
-    else {
+    else if (mode == "Game of life"){
+        insert_random_points();
+        arry = [insert_random_amount];
+    } else if (mode == "SIR Simulation") {
         insert_random_points();
         arry = [insert_random_amount];
     }
@@ -160,7 +144,7 @@ function update_automata() {
 
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
     cnv.position(380, 40);
-    automata = new Automata(loneliness, overpopulation, reproduction, rows, cols);
+    automata = new Automata(rows, cols);
     
     div_chart.position(cols*size+size*2+400,120);
 
@@ -181,6 +165,24 @@ function update_automata() {
         arry = [1];
     }
     else if (mode == "Game of life") {
+        automata.GoL_set(loneliness, overpopulation, reproduction);
+        if (aux == null) {
+            initial_input.value(floor(rows*cols*0.2));
+            insert_random_amount = floor(rows*cols*0.2);
+        }
+        else if (aux[0] > rows*cols || aux[0] < 0) {
+            initial_input.value(floor(rows*cols*0.2));
+            insert_random_amount = floor(rows*cols*0.2);
+        }
+        else {
+            initial_input.value(aux[0]);
+            insert_random_amount = aux[0];
+        }
+        initial_value = initial_input.value();
+        insert_random_points();
+        arry = [insert_random_amount];
+    } else if (mode == "SIR Simulation") {
+        automata.SIR_set(infect_chance, recover_mult, recover_minimum);
         if (aux == null) {
             initial_input.value(floor(rows*cols*0.2));
             insert_random_amount = floor(rows*cols*0.2);
@@ -226,6 +228,7 @@ function create_UI() {
     dropdown = createSelect();
     dropdown.option("Elementary CA");
     dropdown.option("Game of life");
+    dropdown.option("SIR Simulation");
     dropdown.selected("Elementary CA");
     dropdown.changed(changeMode);
     dropdown.position(40, 50);
@@ -301,7 +304,17 @@ function changeMode() {
 
     size_input.value("50,50");
 
-    if (mode == "Game of life") {
+    if (mode == "Elementary CA") {
+        arry = [1];
+        initial_input.value("30");
+        initial_input_label.html("Rule");
+
+        if (title_examples != undefined) {
+            title_examples.remove();
+            btn_ex1.remove();
+        }
+    }
+    else if (mode == "Game of life") {
         initial_input.value("500");
         initial_input_label.html("Random pixels");
 
@@ -316,14 +329,15 @@ function changeMode() {
         btn_ex1.position(40, 360);
         btn_ex1.mousePressed(insert_opt_one);
         arry = [insert_random_amount];
-    }
-    else {
-        arry = [1];
-        initial_input.value("30");
-        initial_input_label.html("Rule");
+    } else if (mode == "SIR Simulation") {
+        arry = [insert_random_amount];
+        initial_input.value("10");
+        initial_input_label.html("Random pixels");
 
-        title_examples.remove();
-        btn_ex1.remove();
+        if (title_examples != undefined) {
+            title_examples.remove();
+            btn_ex1.remove();
+        }
     }
 
     update_automata();
@@ -342,10 +356,12 @@ function draw_board() {
     strokeWeight(0);
     for (let x = 0; x < rows; x++) {
         for (let y = 0; y < cols; y++) {
-            if (automata.get_state(x, y) == 1) {
+            if (automata.get_state(x, y) == 0) {
+                fill(inactive_color);
+            } else if (automata.get_state(x, y) == 1){
                 fill(active_color);
             } else {
-                fill(inactive_color);
+                fill(removed_color);
             }
             rect(y*size+size, x*size+size, size-2, size-2);
         }
@@ -407,7 +423,8 @@ function setup() {
     create_UI();
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
     cnv.position(380, 40);
-    automata = new Automata(loneliness, overpopulation, reproduction, rows, cols);
+    automata = new Automata(rows, cols);
+    automata.GoL_set(loneliness, overpopulation, reproduction);
     reset_automata();
 }
 
@@ -430,8 +447,6 @@ function draw() {
     arry.push(automata.get_unique()[1]);
 
     graph(arrx, arry);
-
-
 }
 
 // button function example
