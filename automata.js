@@ -194,13 +194,11 @@ class Automata {
                 if (indexY == -1) indexY = this.cols-1;
                 else if (indexY == this.cols) indexY = 0;
 
-                if ((indexX != 0 && indexY != 0) && 
-                    (this.state[indexX][indexY].get_value() == 1)) {
-                    neighbors += 1;
-                }
+                neighbors += this.state[indexX][indexY].get_value();
             }
         }
-        return neighbors;
+        // remove extra unit if state[x][y] is active
+        return neighbors - this.state[x][y].get_value();
     }
 
     _SIR_apply_rules(x, y, neighbors) {
