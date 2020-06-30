@@ -14,10 +14,11 @@ class Automata {
      * set_state(x, y, val)
      * get_unique()             */
 
-    constructor(rows, cols) {
+    constructor(rows, cols, mode) {
         // assign attributes
         this.rows = rows;
         this.cols = cols;
+        this.mode = mode;
 
         // create state matrix
         this.state = new Array(rows);
@@ -33,10 +34,15 @@ class Automata {
         this.repro = reproduction;
     }
 
-    SIR_set(infect_chance, recover_mult, recover_minimum) {
-        this.infect_chance = infect_chance;
-        this.recover_mult = recover_mult;
-        this.recover_minimum = recover_minimum;
+    SIR_set(S0, I0, R0, beta, gamma, i_ratio, i_travel, i_amount) {
+        this.S0 = S0;
+        this.I0 = I0;
+        this.R0 = R0;
+        this.beta = beta;         // intra-cell infect rate
+        this.gamma = gamma;       // intra-cell remove rate
+        this.i_ratio = i_ratio;   // extra-cell infect ratio (I >= i_ratio(R+I) => Cell is infectious)
+        this.i_travel = i_travel; // how likely (0~1) a cell will receive infection from neighbors
+        this.i_amount = i_amount; // amount of infection received from neighbors
     }
 
     initialize() {
@@ -44,21 +50,25 @@ class Automata {
         // elements are undefined and/or empty
         for (let x = 0; x < this.rows; x++) {
             for (let y = 0; y < this.cols; y++) {
-                this.state[x][y] = new Automaton(0, 0);
+                if (this.mode == "Elementary CA" || this.mode == "Game of life") {
+                    this.state[x][y] = new Automaton(0, 0);
+                } else {
+                    this.state[x][y] = new AutomatonSIR(this.S0, this.I0, this.R0, this.beta, this.gamma)
+                }
                 this.unique[0] += 1;
             }
         }
     }
 
-    evolve(mode) {
+    evolve(s_mode) {
         // evolve automata
         this.unique = {0:0, 1:0};
 
-        if (mode == "Elementary CA") {
+        if (s_mode == "Elementary CA") {
             this._ECA_evolve();
-        } else if (mode == "Game of life") {
+        } else if (s_mode == "Game of life") {
             this._GoL_evolve();
-        } else if (mode == "SIR Simulation") {
+        } else if (s_mode == "SIR Simulation") {
             this._SIR_evolve();
         }
     }
@@ -69,6 +79,10 @@ class Automata {
 
     set_state(x, y, val) {
         this.state[x][y].set_value(val);
+    }
+
+    SIR_infect(x, y) {
+        this.state[x][y].infect(i_amount);
     }
 
     get_unique() {
@@ -158,25 +172,16 @@ class Automata {
 // this segment is responsible for SIR Simulation evolution over time ===========================================
 
     _SIR_evolve() {
-        // create aux matrix
-        let aux = new Array(this.rows);
-        for (let i = 0; i < this.rows; i++) {
-            aux[i] = new Array(this.cols);
-            for (let j = 0; j < this.cols; j++) {
-                aux[i][j] = new Automaton(0, 0);
-            }
-        }
         // compute new state
         for (let x = 0; x < this.rows; x++) {
             for (let y = 0; y < this.cols; y++) {
                 let neighbors = this._SIR_num_of_neighbors(x, y);
-                let tmp_value = this._SIR_apply_rules(x, y, neighbors);
-                aux[x][y].set_value(tmp_value[0]);
-                aux[x][y].set_count(tmp_value[1]);
-                this.unique[tmp_value] += 1;
+                if (this._SIR_apply_rules(x, y, neighbors)) {
+                    this.state[x][y].infect(i_amount);
+                }
+                this.state[x][y].evolve();
             }
         }
-        this.state = aux;
     }
 
     _SIR_num_of_neighbors(x, y) {
@@ -194,40 +199,27 @@ class Automata {
                 if (indexY == -1) indexY = this.cols-1;
                 else if (indexY == this.cols) indexY = 0;
 
-                neighbors += this.state[indexX][indexY].get_value();
-            }
-        }
-        // remove extra unit if state[x][y] is active
-        return neighbors - this.state[x][y].get_value();
-    }
-
-    _SIR_apply_rules(x, y, neighbors) {
-        // apply defined rules to (x, y)
-        let return_arr = new Array(2);
-        if (this.state[x][y].get_value() == 1) {
-            let recover = random()*this.recover_mult+this.recover_minimum;
-            if (this.state[x][y].get_count() > recover) {
-                return_arr[0] = 2;
-                return_arr[1] = 0
-                return return_arr;
-            } else {
-                return_arr[0] = 1;
-                return_arr[1] = this.state[x][y].get_count() +1;
-                return return_arr
-            }
-        }
-        else if (this.state[x][y].get_value() == 0) {
-            for (let i = 0; i < neighbors; i++) {
-                let a = random();
-                if (a < this.infect_chance) {
-                    return_arr[0] = 1;
-                    return_arr[1] = 0;
-                    return return_arr
+                let act_state = this.state[indexX][indexY].get_value();
+                if (act_state[1] >= this.i_ratio*(act_state[0]+act_state[2])) {
+                    neighbors += 1;
                 }
             }
         }
-        return_arr[0] = this.state[x][y].get_value();
-        return_arr[1] = this.state[x][y].get_count() +1;
-        return return_arr
+        // remove extra unit if state[x][y] is infected
+        let c_state = this.state[x][y].get_value();
+        if (c_state[1] >= this.i_ratio*(c_state[0]+c_state[2])) {
+           return neighbors - 1;
+        }
+        return neighbors;
+    }
+
+    _SIR_apply_rules(x, y, neighbors) {
+        for (let i = 0; i < neighbors; i++) {
+            let a = random();
+            if (a < this.i_travel) {
+                return true;
+            }
+        }
+        return false;
     }
 }

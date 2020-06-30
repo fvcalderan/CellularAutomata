@@ -15,9 +15,14 @@ let overpopulation = 3;
 let reproduction = 3;
 
 // SIR settings
-let infect_chance = 0.01;
-let recover_mult = 100;
-let recover_minimum = 50;
+let S0 = 1;
+let I0 = 0;
+let R0 = 0;
+let beta = 0.9;
+let gamma = 0.03;
+let i_ratio = 0.05;
+let i_travel = 0.2;
+let i_amount = 0.01;
 
 // other setup
 let automata, cnv;
@@ -51,7 +56,11 @@ function insert_random_points() {
     }
     for (let i = 0; i < insert_random_amount; i++) {
         aux = floor(random(position_list.length));
-        automata.set_state(position_list[aux].x, position_list[aux].y, 1);
+        if (mode != "SIR Simulation") {
+            automata.set_state(position_list[aux].x, position_list[aux].y, 1);
+        } else {
+            automata.SIR_infect(position_list[aux].x, position_list[aux].y);
+        }
         position_list.splice(aux, 1);
     }
 }
@@ -63,7 +72,7 @@ function insert_opt_one(){
 
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
     cnv.position(380, 40);
-    automata = new Automata(rows, cols);
+    automata = new Automata(rows, cols, "Elementary CA");
     automata.GoL_set(loneliness, overpopulation, reproduction);
     size_input.value("50,50");
 
@@ -144,7 +153,7 @@ function update_automata() {
 
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
     cnv.position(380, 40);
-    automata = new Automata(rows, cols);
+    automata = new Automata(rows, cols, mode);
     
     div_chart.position(cols*size+size*2+400,120);
 
@@ -182,7 +191,7 @@ function update_automata() {
         insert_random_points();
         arry = [insert_random_amount];
     } else if (mode == "SIR Simulation") {
-        automata.SIR_set(infect_chance, recover_mult, recover_minimum);
+        automata.SIR_set(S0, I0, R0, beta, gamma, i_ratio, i_travel, i_amount);
         if (aux == null) {
             initial_input.value(floor(rows*cols*0.2));
             insert_random_amount = floor(rows*cols*0.2);
@@ -354,16 +363,27 @@ function draw_board() {
     fill(background_color);
     rect(0, 0, width, height);
     strokeWeight(0);
-    for (let x = 0; x < rows; x++) {
-        for (let y = 0; y < cols; y++) {
-            if (automata.get_state(x, y) == 0) {
-                fill(inactive_color);
-            } else if (automata.get_state(x, y) == 1){
-                fill(active_color);
-            } else {
-                fill(removed_color);
+    if (mode != "SIR Simulation") {
+        for (let x = 0; x < rows; x++) {
+            for (let y = 0; y < cols; y++) {
+                if (automata.get_state(x, y) == 0) {
+                    fill(inactive_color);
+                } else if (automata.get_state(x, y) == 1){
+                    fill(active_color);
+                } else {
+                    fill(removed_color);
+                }
+                rect(y*size+size, x*size+size, size-2, size-2);
             }
-            rect(y*size+size, x*size+size, size-2, size-2);
+        }
+    } else {
+        for (let x = 0; x < rows; x++) {
+            for (let y = 0; y < cols; y++) {
+                SIR_array = automata.get_state(x, y);
+                let c = color(floor(SIR_array[1]*255), floor(SIR_array[0]*255), floor(SIR_array[2]*255));
+                fill(c);
+                rect(y*size+size, x*size+size, size-2, size-2);
+            }
         }
     }
 }
@@ -423,7 +443,7 @@ function setup() {
     create_UI();
     cnv = createCanvas(cols*size+size*2, rows*size+size*2);
     cnv.position(380, 40);
-    automata = new Automata(rows, cols);
+    automata = new Automata(rows, cols, "Elementary CA");
     automata.GoL_set(loneliness, overpopulation, reproduction);
     reset_automata();
 }
@@ -448,6 +468,3 @@ function draw() {
 
     graph(arrx, arry);
 }
-
-// button function example
-// https://editor.p5js.org/luisa/sketches/HJv74TD6G
