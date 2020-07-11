@@ -16,14 +16,14 @@
       margin: 0;
     }
 
-    .fxph, .fxph-1{
+    .fxph, .fxph-1, .fxph-2, .fxph-3{
       border: 0; 
       padding: 4px 0;
       border-bottom: 1px solid #ccc;
       background-color: transparent;
     }
 
-    .fxph ~ #id-fxph, .fxph-1 ~ #id-fxph-1{
+    .fxph ~ #id-fxph, .fxph-1 ~ #id-fxph-1, .fxph-2 ~ #id-fxph-2, .fxph-3 ~ #id-fxph-3{
       position: absolute; 
       left: 0; 
       width: 100%;
@@ -37,6 +37,14 @@
     .fxph:focus ~ #id-fxph, .has-content.fxph ~ #id-fxph,
     .fxph-1:focus ~ #id-fxph-1, .has-content.fxph-1 ~ #id-fxph-1{
       top: 145px !important;
+      font-size: 12px;
+      color: #66d9ef;
+      transition: 0.3s;
+    }
+
+    .fxph-2:focus ~ #id-fxph-2, .has-content.fxph-2 ~ #id-fxph-2,
+    .fxph-3:focus ~ #id-fxph-3, .has-content.fxph-3 ~ #id-fxph-3{
+      top: 190px !important;
       font-size: 12px;
       color: #66d9ef;
       transition: 0.3s;

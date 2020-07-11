@@ -26,7 +26,7 @@ let i_amount = 0.01;
 
 // other setup
 let automata, cnv;
-let size_input, initial_input, div_chart;
+let size_input, initial_input, beta_input, gamma_input, div_chart;
 let mode = "Elementary CA";
 let insert_random_amount = 500;
 
@@ -40,7 +40,7 @@ let removed_color = "#f92672";
 let title_examples;
 let generation = 0;
 let running = false;
-let btn_play_pause, btn_clear_board, dropdown, count, btn_ex1;
+let btn_play_pause, btn_clear_board, dropdown, count, btn_ex1, beta_input_label, gamma_input_label;
 let arrx = [0];
 let arry = [1];
 
@@ -126,6 +126,8 @@ function reset_automata() {
         insert_random_points();
         arry = [insert_random_amount];
     } else if (mode == "SIR Simulation") {
+        beta_input.removeAttribute('disabled');
+        gamma_input.removeAttribute('disabled');
         insert_random_points();
         arry = [insert_random_amount];
     }
@@ -173,6 +175,7 @@ function update_automata() {
         automata.set_state(rows-1, floor(cols/2), 1);
         arry = [1];
     }
+
     else if (mode == "Game of life") {
         automata.GoL_set(loneliness, overpopulation, reproduction);
         if (aux == null) {
@@ -190,8 +193,29 @@ function update_automata() {
         initial_value = initial_input.value();
         insert_random_points();
         arry = [insert_random_amount];
-    } else if (mode == "SIR Simulation") {
+    }
+
+    else if (mode == "SIR Simulation") {
+        auxb = parseFloat(beta_input.value());
+        if (isNaN(auxb) || auxb > 1 || auxb < 0) {
+            beta_input.value("0.9");
+            beta = 0.9;
+        }
+        else {
+            beta_input.value(auxb);
+            beta = auxb;
+        }
+        auxb = parseFloat(gamma_input.value());
+        if (isNaN(auxb) || auxb > 1 || auxb < 0) {
+            gamma_input.value("0.03");
+            gamma = 0.03;
+        }
+        else {
+            gamma_input.value(auxb);
+            gamma = auxb;
+        }
         automata.SIR_set(S0, I0, R0, beta, gamma, i_ratio, i_travel, i_amount);
+
         if (aux == null) {
             initial_input.value(floor(rows*cols*0.2));
             insert_random_amount = floor(rows*cols*0.2);
@@ -322,10 +346,28 @@ function changeMode() {
             title_examples.remove();
             btn_ex1.remove();
         }
+
+        if (beta_input_label != undefined) {
+            beta_input.remove();
+            beta_input_label.remove();
+            gamma_input.remove();
+            gamma_input_label.remove();
+        }
+
+        btn_play_pause.position(40, 250);
+        btn_clear_board.position(190, 250);
+        btn_update.position(40, 200);
     }
     else if (mode == "Game of life") {
         initial_input.value("500");
         initial_input_label.html("Random pixels");
+
+        if (beta_input_label != undefined) {
+            beta_input.remove();
+            beta_input_label.remove();
+            gamma_input.remove();
+            gamma_input_label.remove();
+        }
 
         title_examples = createElement("p", "Examples");
         title_examples.position(40, 310);
@@ -338,7 +380,12 @@ function changeMode() {
         btn_ex1.position(40, 360);
         btn_ex1.mousePressed(insert_opt_one);
         arry = [insert_random_amount];
-    } else if (mode == "SIR Simulation") {
+
+        btn_play_pause.position(40, 250);
+        btn_clear_board.position(190, 250);
+        btn_update.position(40, 200);
+    }
+    else if (mode == "SIR Simulation") {
         arry = [insert_random_amount];
         initial_input.value("10");
         initial_input_label.html("Random pixels");
@@ -347,6 +394,41 @@ function changeMode() {
             title_examples.remove();
             btn_ex1.remove();
         }
+
+        btn_play_pause.position(40, 300);
+        btn_clear_board.position(190, 300);
+        btn_update.position(40, 250);
+
+        beta_input = createInput("0.9");
+        beta_input.attribute("class", "fxph-2");
+        beta_input.attribute("placeholder", "");   
+        beta_input.position(40, 210);
+        beta_input.style("width", "140px");  
+        beta_input.style("font-size", "12px"); 
+        beta_input.style("font-family", "Courier, monospace");
+        beta_input.style("color", "#ffffff");
+        beta_input_label = createElement("label", "Beta");
+        beta_input_label.attribute("id", "id-fxph-2");
+        beta_input_label.position(40, 210);
+
+        gamma_input = createInput("0.03");
+        gamma_input.attribute("class", "fxph-3");
+        gamma_input.attribute("placeholder", "");   
+        gamma_input.position(190, 210);
+        gamma_input.style("width", "140px");  
+        gamma_input.style("font-size", "12px"); 
+        gamma_input.style("font-family", "Courier, monospace");
+        gamma_input.style("color", "#ffffff");
+        gamma_input_label = createElement("label", "Gamma");
+        gamma_input_label.attribute("id", "id-fxph-3");
+        gamma_input_label.position(190, 210);
+
+        if (beta_input.value() != "") beta_input.attribute("class", "fxph-2 has-content");
+        else beta_input.attribute("class", "fxph-2");
+
+        if (gamma_input.value() != "") gamma_input.attribute("class", "fxph-3 has-content");
+        else gamma_input.attribute("class", "fxph-3");
+
     }
 
     update_automata();
