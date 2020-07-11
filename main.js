@@ -418,7 +418,7 @@ function changeMode() {
 		arrRec = [0];
 
         initial_input.value("10");
-        initial_input_label.html("Random pixels");
+        initial_input_label.html("Infected Cells");
 
         if (title_examples != undefined) {
             title_examples.remove();
