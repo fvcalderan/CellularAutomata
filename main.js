@@ -41,8 +41,12 @@ let title_examples;
 let generation = 0;
 let running = false;
 let btn_play_pause, btn_clear_board, dropdown, count, btn_ex1, beta_input_label, gamma_input_label;
+let slider;
 let arrx = [0];
 let arry = [1];
+let arrInf = [Math.floor(i_amount * 1000)];
+let arrSau = [1000 * rows * cols - arrInf[0]];
+let arrRec = [0];
 
 function insert_random_points() {
     // insert random points
@@ -97,7 +101,13 @@ function toggle_simulation() {
     // set simulation parameters and start it
     size_input.attribute('disabled', '');
     initial_input.attribute('disabled', '');
-    dropdown.attribute('disabled', '');
+    dropdown.attribute('disabled', '');   
+    btn_update.attribute('disabled', '');
+
+    if (mode == "SIR Simulation"){
+        gamma_input.attribute('disabled', '');
+        beta_input.attribute('disabled', '');
+    }
 
     running = !running
     if (running) {
@@ -116,24 +126,29 @@ function reset_automata() {
     size_input.removeAttribute('disabled');
     initial_input.removeAttribute('disabled');
     dropdown.removeAttribute('disabled');
+    btn_update.removeAttribute('disabled');
     automata.initialize();
-    
+
+	arrx = [0];
     if (mode == "Elementary CA") {
         automata.set_state(rows-1, floor(cols/2), 1);
         arry = [1];
+	    graph(arrx, arry);
     }
     else if (mode == "Game of life"){
         insert_random_points();
         arry = [insert_random_amount];
+	    graph(arrx, arry);
     } else if (mode == "SIR Simulation") {
         beta_input.removeAttribute('disabled');
         gamma_input.removeAttribute('disabled');
         insert_random_points();
-        arry = [insert_random_amount];
+		arrInf = [Math.floor(i_amount * 1000)];
+		arrSau = [1000 * rows * cols - arrInf[0]];
+		arrRec = [0];
+		graphSIR(arrx, arrInf, arrSau, arrRec);
     }
     draw_board();
-    arrx = [0];
-    graph(arrx, arry);
 }
 
 function update_automata() {
@@ -159,6 +174,7 @@ function update_automata() {
     
     div_chart.position(cols*size+size*2+400,120);
 
+	arrx = [0];
     aux = initial_input.value().match(/\d+/);
     if (mode == "Elementary CA") {
         automata.initialize();
@@ -174,17 +190,17 @@ function update_automata() {
         initial_value = initial_input.value();
         automata.set_state(rows-1, floor(cols/2), 1);
         arry = [1];
+	    graph(arrx, arry);
     }
-
     else if (mode == "Game of life") {
         automata.GoL_set(loneliness, overpopulation, reproduction);
         if (aux == null) {
-            initial_input.value(floor(rows*cols*0.2));
             insert_random_amount = floor(rows*cols*0.2);
+            initial_input.value(insert_random_amount);
         }
         else if (aux[0] > rows*cols || aux[0] < 0) {
-            initial_input.value(floor(rows*cols*0.2));
             insert_random_amount = floor(rows*cols*0.2);
+            initial_input.value(insert_random_amount);
         }
         else {
             initial_input.value(aux[0]);
@@ -193,9 +209,8 @@ function update_automata() {
         initial_value = initial_input.value();
         insert_random_points();
         arry = [insert_random_amount];
-    }
-
-    else if (mode == "SIR Simulation") {
+	    graph(arrx, arry);
+    } else if (mode == "SIR Simulation") {
         auxb = parseFloat(beta_input.value());
         if (isNaN(auxb) || auxb > 1 || auxb < 0) {
             beta_input.value("0.9");
@@ -215,14 +230,13 @@ function update_automata() {
             gamma = auxb;
         }
         automata.SIR_set(S0, I0, R0, beta, gamma, i_ratio, i_travel, i_amount);
-
         if (aux == null) {
-            initial_input.value(floor(rows*cols*0.2));
-            insert_random_amount = floor(rows*cols*0.2);
+        	insert_random_amount = floor(rows*cols*0.2);
+            initial_input.value(insert_random_amount);
         }
         else if (aux[0] > rows*cols || aux[0] < 0) {
-            initial_input.value(floor(rows*cols*0.2));
             insert_random_amount = floor(rows*cols*0.2);
+            initial_input.value(insert_random_amount);
         }
         else {
             initial_input.value(aux[0]);
@@ -230,11 +244,12 @@ function update_automata() {
         }
         initial_value = initial_input.value();
         insert_random_points();
-        arry = [insert_random_amount];
+        arrInf = [Math.floor(i_amount * 1000)]
+        arrSau = [1000 * rows * cols - arrInf[0]];
+        arrRec = [0];
+	    graphSIR(arrx, arrInf, arrSau, arrRec);
     }
     draw_board();
-    arrx = [0];
-    graph(arrx, arry);
 }
 
 function btn_style(btn){
@@ -327,6 +342,16 @@ function create_UI() {
     btn_update.position(40, 200);
     btn_update.mousePressed(update_automata);
 
+    title_speed = createElement("p", "Speed:");
+    title_speed.position(40, 500);
+    title_speed.style("font-family", "Courier, monospace");
+    title_speed.style("color", "#a6e22e");
+
+    slider = createSlider(1, 60, 60);
+    slider.position(40, 540);
+    slider.style('width', '290px');
+    slider.parent("teste");
+
     div_chart = select('#chart');
     div_chart.position(cols*size+size*2+400,120);
 
@@ -384,9 +409,14 @@ function changeMode() {
         btn_play_pause.position(40, 250);
         btn_clear_board.position(190, 250);
         btn_update.position(40, 200);
-    }
-    else if (mode == "SIR Simulation") {
-        arry = [insert_random_amount];
+
+    } else if (mode == "SIR Simulation") {
+
+    	// Qtdd de infectados
+		arrInf = [Math.floor(i_amount * 1000)];
+		arrSau = [1000 * rows * cols - arrInf[0]];
+		arrRec = [0];
+
         initial_input.value("10");
         initial_input_label.html("Random pixels");
 
@@ -428,14 +458,9 @@ function changeMode() {
 
         if (gamma_input.value() != "") gamma_input.attribute("class", "fxph-3 has-content");
         else gamma_input.attribute("class", "fxph-3");
-
     }
 
     update_automata();
-    draw_board();
-    arrx = [0];
-    
-    graph(arrx, arry);
 }
 
 function draw_board() {
@@ -462,7 +487,7 @@ function draw_board() {
         for (let x = 0; x < rows; x++) {
             for (let y = 0; y < cols; y++) {
                 SIR_array = automata.get_state(x, y);
-                let c = color(floor(SIR_array[1]*255), floor(SIR_array[0]*255), floor(SIR_array[2]*255));
+                let c = color(floor(SIR_array[1]*102), floor(SIR_array[2]*217), floor(SIR_array[0]*239));
                 fill(c);
                 rect(y*size+size, x*size+size, size-2, size-2);
             }
@@ -471,11 +496,10 @@ function draw_board() {
 }
 
 function graph(arrx, arry){
+
     new Chartist.Line('#chart', {
         labels: arrx,
-        series: [
-            arry,
-        ]
+        series: [arry]
     }, {
         low: 0,
         showArea: true,
@@ -512,7 +536,68 @@ function graph(arrx, arry){
                     textAnchor: 'middle',
                     flipTitle: false
                 }
-            })
+            }),
+            ,
+            Chartist.plugins.legend({
+            	legendNames: [],
+            }),
+        ]
+    });
+}
+
+
+function graphSIR(arrx, arry, arry1, arry2){
+
+    new Chartist.Line('#chart', {
+        labels: arrx,
+        series: [arry, arry1, arry2]
+    }, {
+        low: 0,
+        showArea: true,
+        width: 460,
+        height: 320,
+        axisX: {
+            labelInterpolationFnc: function labelInterpolationFnc(value, index) {
+                if(value % 60 === 0) return value;
+                return null;
+            }
+        },
+        axisY: {
+            labelInterpolationFnc: function labelInterpolationFnc(value, index) {
+                if(value >= 1000000) return ((value/1000000).toFixed(1)) + "M";
+                else if (value >= 100000) return ((value/100000).toFixed(1)) + "K";
+                return value;
+            }
+        },
+        chartPadding: {
+            bottom: 20,
+            left: 30
+        },
+        plugins: [
+            Chartist.plugins.ctAxisTitle({
+                axisX: {
+                    axisTitle: 'Generation',
+                    axisClass: 'ct-axis-title',
+                    offset: {
+                        x: 0,
+                        y: 30
+                    },
+                    textAnchor: 'middle'
+                },
+                axisY: {
+                    axisTitle: '# of cells',
+                    axisClass: 'ct-axis-title',
+                    offset: {
+                        x: 0,
+                        y: -5
+                    },
+                    textAnchor: 'middle',
+                    flipTitle: false
+                }
+            }),
+            Chartist.plugins.legend({
+            	legendNames: ["Infected", "Susceptible", "Recovered"],
+            }),
         ]
     });
 }
@@ -546,7 +631,26 @@ function draw() {
     draw_board();
 
     arrx.push(generation);
-    arry.push(automata.get_unique()[1]);
+    if (mode != "SIR Simulation"){arry.push(automata.get_unique()[1]); graph(arrx, arry);}
+    else {
+    	arrInf.push(automata.get_unique()[0]);
+    	arrSau.push(automata.get_unique()[1]);
+    	arrRec.push(automata.get_unique()[2]);
+    	graphSIR(arrx, arrInf, arrSau, arrRec);
+        if (mouseX >= 10 && mouseY >= 10 && mouseX <= cols * 10 + 10 && mouseY <= rows * 10 + 10){
+            x = Math.floor(mouseX / 10);
+            y = Math.floor(mouseY / 10);
+            stu = automata.get_state(x, y);
+            inf = (stu[0] == undefined) ? 0 : Math.floor(1000 * stu[0]);
+            sus = (stu[1] == undefined) ? 0 : Math.floor(1000 * stu[1]);
+            reco = 1000 - inf - sus;
+            textSize(14);
+            fill("white");
+            textStyle(BOLD);
+            text("# of Infected: " + inf + "\n# of Susceptible: " + sus + "\n# of Recovered: " + reco, mouseX, mouseY, 200, 100);
+        }
+    }
 
-    graph(arrx, arry);
+    if (slider.value() != 60) frameRate(slider.value());
+        
 }

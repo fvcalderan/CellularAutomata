@@ -25,7 +25,10 @@ class Automata {
         for (let i = 0; i < rows; i++) {
             this.state[i] = new Array(cols);
         }
-        this.unique = {0:0, 1:0};
+        // 0 - inactive or Inf
+        // 1 - active or Sau
+        // 2 - Rec
+        this.unique = {0:0, 1:0, 2:0};
     }
 
     GoL_set(loneliness, overpopulation, reproduction) {
@@ -62,7 +65,7 @@ class Automata {
 
     evolve(s_mode) {
         // evolve automata
-        this.unique = {0:0, 1:0};
+        this.unique = {0:0, 1:0, 2:0};
 
         if (s_mode == "Elementary CA") {
             this._ECA_evolve();
@@ -180,6 +183,16 @@ class Automata {
                     this.state[x][y].infect(i_amount);
                 }
                 this.state[x][y].evolve();
+                /* computing the total number for each state. For this,  
+                 * we assume a population of 1000 people for each cell.             */
+                // 0 - Inf
+                let aux_I = Math.floor(1000 * this.state[x][y].get_I());
+                this.unique[0] += aux_I;
+                // 1 - Sau
+                let aux_S = Math.floor(1000 * this.state[x][y].get_S());
+                this.unique[1] += aux_S;
+                // 2 - Rec
+                this.unique[2] += (1000 - aux_I - aux_S);
             }
         }
     }
