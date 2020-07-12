@@ -1,3 +1,10 @@
+/* BSD 3-Clause License
+ * Copyright (c) 2020, Felipe Vaiano Calderan
+ * Copyright (c) 2020, Gabriel Augusto Lins Leal Pinheiro
+ * Copyright (c) 2020, Silvio de Souza Neves Neto
+ * All rights reserved.
+ * See the full license inside LICENSE.txt file */
+
 class Automata {
     /* this class provides management rules for the automata. It depends directly on the
      * Automaton class. It's crucial noticing that the Automaton class only manages each

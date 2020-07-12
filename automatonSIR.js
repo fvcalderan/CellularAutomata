@@ -1,3 +1,10 @@
+/* BSD 3-Clause License
+ * Copyright (c) 2020, Felipe Vaiano Calderan
+ * Copyright (c) 2020, Gabriel Augusto Lins Leal Pinheiro
+ * Copyright (c) 2020, Silvio de Souza Neves Neto
+ * All rights reserved.
+ * See the full license inside LICENSE.txt file */
+
 class AutomatonSIR {
     /* this class refers to a single cell of SIR. It should function as a basic
      * struct and/or grouping of values. The interaction between automata

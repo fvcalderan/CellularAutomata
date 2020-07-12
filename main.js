@@ -1,7 +1,9 @@
-/* Authors:
- * Felipe Vaiano Calderan
- * Gabriel Augusto Lins Leal
- * Silvio de Souza Neves Neto */
+/* BSD 3-Clause License
+ * Copyright (c) 2020, Felipe Vaiano Calderan
+ * Copyright (c) 2020, Gabriel Augusto Lins Leal Pinheiro
+ * Copyright (c) 2020, Silvio de Souza Neves Neto
+ * All rights reserved.
+ * See the full license inside LICENSE.txt file */
 
 // simulation variables
 let rows = 50;
