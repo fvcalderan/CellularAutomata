@@ -50,7 +50,7 @@ class Automata {
         this.R0 = R0;
         this.beta = beta;         // intra-cell infect rate
         this.gamma = gamma;       // intra-cell remove rate
-        this.i_ratio = i_ratio;   // extra-cell infect ratio (I >= i_ratio(S+I+R) => Cell is infectious)
+        this.i_ratio = i_ratio;   // extra-cell infect ratio (I >= i_ratio => Cell is infectious)
         this.i_travel = i_travel; // how likely (0~1) a cell will receive infection from neighbors
         this.i_amount = i_amount; // amount of infection received from neighbors
     }
@@ -220,14 +220,14 @@ class Automata {
                 else if (indexY == this.cols) indexY = 0;
 
                 let act_state = this.state[indexX][indexY].get_value();
-                if (act_state[1] >= this.i_ratio*(act_state[0]+act_state[1]+act_state[2])) {
+                if (act_state[1] >= this.i_ratio) {
                     neighbors += 1;
                 }
             }
         }
         // remove extra unit if state[x][y] is infected
         let c_state = this.state[x][y].get_value();
-        if (c_state[1] >= this.i_ratio*(c_state[0]+c_state[1]+c_state[2])) {
+        if (c_state[1] >= this.i_ratio) {
            return neighbors - 1;
         }
         return neighbors;
