@@ -26,6 +26,10 @@ let i_ratio = 0.05;
 let i_travel = 0.2;
 let i_amount = 0.01;
 
+//let i_ratio = 0.05;
+//let i_travel = 0.2;
+//let i_amount = 0.01;
+
 // other setup
 let automata, cnv;
 let size_input, initial_input, beta_input, gamma_input, div_chart;
@@ -643,13 +647,13 @@ function draw() {
             x = Math.floor(mouseX / 10);
             y = Math.floor(mouseY / 10);
             stu = automata.get_state(x, y);
-            inf = (stu[0] == undefined) ? 0 : Math.floor(1000 * stu[0]);
-            sus = (stu[1] == undefined) ? 0 : Math.floor(1000 * stu[1]);
+            inf = (stu[1] == undefined) ? 0 : Math.floor(1000 * stu[1]);
+            sus = (stu[0] == undefined) ? 0 : Math.floor(1000 * stu[0]);
             reco = 1000 - inf - sus;
             textSize(14);
             fill("white");
             textStyle(BOLD);
-            text("# of Infected: " + inf + "\n# of Susceptible: " + sus + "\n# of Recovered: " + reco, mouseX, mouseY, 200, 100);
+            text("# of Susceptible: " + sus + "\n# of Infected: " + inf + "\n# of Recovered: " + reco, mouseX, mouseY, 200, 100);
         }
     }
 
