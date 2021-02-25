@@ -14,6 +14,8 @@ This was our final project of Theory of Computation subject.
 
 So, don't expect the prettiest code there! :P
 
+Demo: https://fvcalderan.github.io/CellularAutomata/
+
 ### Simulations:
 
 This program "as-is" is capable of running 3 different kinds of simulations:
